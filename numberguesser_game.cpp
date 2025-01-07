@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+
 using namespace std;
 
 #define MAX_LOADSTRING 100
@@ -15,6 +16,7 @@ using namespace std;
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+vector<int> numbers;       // Holds the numbers for the grid
 
 
 // Forward declarations of functions included in this code module:
@@ -23,6 +25,7 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void DrawMyRectangle(HDC hdc, RECT rect);
+
 
 
 
@@ -132,17 +135,21 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 
 
+
 	typedef struct RECTA
 	{
 		LONG    x;
 		LONG    y;
-		LONG    rectHeight;
-		LONG    rectWidth;
+		LONG    ey;
+		LONG    ex;
 	};
+
+	
+
 
 	void DrawMyRectangle(HDC hdc, RECTA rect) {
 		// rectangle parameters for drawing
-		RECT drawRect = { rect.x, rect.y, rect.rectWidth, rect.rectHeight };
+		RECT drawRect = { rect.x, rect.y, rect.ey, rect.ex };
 
 		
 		
@@ -150,7 +157,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		// Fill the rectangle with the selected color
 		
 		FrameRect(hdc, &drawRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
-
 		
 	}
 
@@ -179,23 +185,53 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		{
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hWnd, &ps);
-			// TODO: Add any drawing code that uses hdc here...
+
+			// Vector to hold numbers from 1 to 16
+			vector<int> numbers;
+			for (int n = 1; n <= 16; ++n) {
+				numbers.push_back(n);
+			}
 
 			int index = 0; // Initialize index to track the current number
-			int x = 20, y = 20, rectWidth = 79, rectHeight = 79;
+
+			int x = 20, y = 20, ex = 100, ey = 100;
+			RECTA rect;
+
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < 4; j++) {
-					RECTA rect = { x, y,y + rectHeight, x + rectWidth };
+					rect = { x, y, ex, ey };
+
+					// Draw the rectangle
 					DrawMyRectangle(hdc, rect);
-					index++;
-					y += rectHeight - 1;
+
+					// Get the number for the square
+					int number = numbers[index++];
+
+					// Convert the number to a string
+					wstring numText = std::to_wstring(number);
+
+					// Draw the number inside the rectangle
+					RECT textRect = { x, y, ex, ey }; 
+					DrawText(hdc, numText.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+					// Updating y and ey for the next rectangle in the row
+					y += 79;
+					ey += 79;
 				}
+
+				// Reset y and ey for the next column
 				y = 20;
-				x += rectWidth - 1;
+				ey = 100;
+
+				// Updating x and ex for the next column
+				x += 79;
+				ex += 79;
 			}
+
 			EndPaint(hWnd, &ps);
 		}
 		break;
+
 		
 
 		case WM_DESTROY:
