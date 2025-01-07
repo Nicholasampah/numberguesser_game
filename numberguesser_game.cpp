@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm> // For std::shuffle
+#include <random>    // For std::random_device and std::mt19937
 
 using namespace std;
 
@@ -199,6 +201,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 			for (int n = 1; n <= 16; ++n) {
 				numbers.push_back(n);
 			}
+
+			// Shuffle the numbers randomly
+			random_device rd;
+			mt19937 g(rd());
+			shuffle(numbers.begin(), numbers.end(), g);
 
 			int index = 0; // Initialize index to track the current number
 
