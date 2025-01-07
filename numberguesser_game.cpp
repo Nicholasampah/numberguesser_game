@@ -25,6 +25,7 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void DrawMyRectangle(HDC hdc, RECT rect);
+int DetectClickedRectangle(int x, int y, int gridRows, int gridCols, int rectWidth, int rectHeight, int startX, int startY);
 
 
 
@@ -150,15 +151,22 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	void DrawMyRectangle(HDC hdc, RECTA rect) {
 		// rectangle parameters for drawing
 		RECT drawRect = { rect.x, rect.y, rect.ey, rect.ex };
-
-		
-		
-
 		// Fill the rectangle with the selected color
-		
 		FrameRect(hdc, &drawRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
-		
 	}
+		
+		// Detect Clicked Rectangle
+		int DetectClickedRectangle(int x, int y, int gridRows, int gridCols, int rectWidth, int rectHeight, int startX, int startY) {
+			int col = (y - startX) / rectWidth;
+			int row = (x - startY) / rectHeight;
+
+			if (col >= 0 && col < gridCols && row >= 0 && row < gridRows) {
+				return row * gridCols + col;
+			}
+
+			return -1;
+		}
+	
 
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
@@ -229,6 +237,26 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 			}
 
 			EndPaint(hWnd, &ps);
+		}
+		break;
+
+		case WM_LBUTTONDOWN:
+		{
+			int mouseX = LOWORD(lParam);
+			int mouseY = HIWORD(lParam);
+
+			int gridRows = 4, gridCols = 4, rectWidth = 79, rectHeight = 79, startX = 20, startY = 20;
+
+			int clickedIndex = DetectClickedRectangle(mouseX, mouseY, gridRows, gridCols, rectWidth, rectHeight, startX, startY);
+
+			if (clickedIndex != -1) {
+				wchar_t buffer[100];
+				wsprintf(buffer, L"Rectangle %d clicked!", clickedIndex + 1);
+				MessageBox(hWnd, buffer, L"Click Detected", MB_OK);
+			}
+			else {
+				MessageBox(hWnd, L"Click was outside the grid!", L"Click Detected", MB_OK);
+			}
 		}
 		break;
 
